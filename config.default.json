@@ -1,0 +1,28 @@
+{
+  "BOT": {
+    "APPLICATION_TOKEN": "",
+    "PREFIX": "!",
+    "ADMIN_ID": []
+  },
+  "TWITCH_NOTIF": {
+    "DISCORD_CHANNEL_ID": "",
+    "STREAMER_USERNAME": "",
+    "MESSAGE": ""
+  },
+  "SPEEDRUN_NOTIF": {
+    "DISCORD_CHANNEL_ID": "",
+    "MESSAGE": ""
+  },
+  "TWITCH_API": {
+    "URL": "https://gql.twitch.tv/gql",
+    "HEADERS": {
+      "Client-Id": "",
+      "Client-Session-Id": "",
+      "Client-Version": "",
+      "X-Device-Id": ""
+    }
+  },
+  "SPEEDRUNCOM_API": {
+    "RUNNER_APIKEY": ""
+  }
+}

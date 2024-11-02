@@ -1,0 +1,30 @@
+{
+  "name": "siirzabot",
+  "version": "1.0.0",
+  "description": "A DiscordJS bot sending messages in a specific Discord channel if a specific streamer is online, can also be configured to query verified runs posted by somebody on speedrun.com",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QQtin3/SiirzaBot.git"
+  },
+  "keywords": [
+    "Bot",
+    "Discord",
+    "Twitch",
+    "Speedrun.com"
+  ],
+  "type": "commonjs",
+  "author": "QQtin3",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/QQtin3/SiirzaBot/issues"
+  },
+  "homepage": "https://github.com/QQtin3/SiirzaBot#readme",
+  "dependencies": {
+    "discord.js": "^14.16.3"
+  }
+}
