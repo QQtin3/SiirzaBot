@@ -17,5 +17,11 @@ There you go!
 Some more details :
 - `ADMIN_ID` is an array fullfilled with Discord IDs as integer, so no need to put them as a string.
 - `DISCORD_CHANNEL_ID`s are where your notifications will be sent **IDs need to be a string so keep the quotes**.
-- About Twitch API, just take a look at (this repository)[https://github.com/mauricew/twitch-graphql-api] for more details and how to fill `HEADERS` section.
-- `RUNNER_APIKEY` is found on your (speedrun.com)[https://www.speedrun.com] profile in the Developper section which you can find by scrolling down a bit.
+- About Twitch API, just take a look at [this repository](https://github.com/mauricew/twitch-graphql-api) for more details and how to fill `HEADERS` section.
+- `RUNNER_APIKEY` is found on your [speedrun.com](https://www.speedrun.com) profile in the Developper section which you can find by scrolling down a bit.
+
+# Any suggestion or troubleshooting?
+
+- For any suggestion I let you open an issue maybe I will take a look but no guarantee!
+
+- If you have any problem (which is due to my code not during your setup) I let you open an issue as well or if more sensitive please send a mail at qqtin.projets@qqtinworks.fr 
