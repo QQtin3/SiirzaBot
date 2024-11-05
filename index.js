@@ -3,7 +3,6 @@ const config = require('./config.json');
 const {commandNotFound, twitch, speedruncom, ping, postTwitchNotif, postSrcNotif} = require('./botFunctions.js');
 const {isCurrentlyOnLive} = require('./twitchAPI.js');
 const {processingRuns} = require('./srcAPI.js');
-const {proccesingRuns} = require("./srcAPI");
 
 // DiscordJS client
 const client = new Client({
@@ -34,7 +33,7 @@ client.once('ready', () => {
 let securityCooldownTriggered = false;  // If streamer disconnects make a security not to send notification again
 async function loopTwitchAPI() {
     if (twitchNotifications) {      // Do not loop if notifications are off
-        isOnLive = isCurrentlyOnLive();
+        isOnLive = await isCurrentlyOnLive();
         if (isOnLive && !hasNotificationBeenSent) {
             await postTwitchNotif(client);
             hasNotificationBeenSent = true;
@@ -55,11 +54,11 @@ async function loopTwitchAPI() {
 
 async function loopSrcAPI() {
     if (speedruncomNotifications) {
-        const runs = await proccesingRuns();
+        const runs = await processingRuns();
         runs.forEach(async (run) => {
             await postSrcNotif(client, run.name, run.categoryName, run.time, run.link);
         })
-        setTimeout(loopSrcAPI, 90000)  // Loop each 15min
+        setTimeout(loopSrcAPI, 900000)  // Loop each 15min
     } else {
         setTimeout(loopSrcAPI, 3600000)  // Loop each hour if notifications are off
     }

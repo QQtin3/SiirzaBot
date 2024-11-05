@@ -25,7 +25,7 @@ async function fetchTwitchAPI() {
 
 async function isCurrentlyOnLive() {
     const result = await fetchTwitchAPI();
-    return !!result[0]?.data?.user?.stream?.id; // Bool
+    return !!result[0]?.data?.user?.stream; // Bool
 }
 
 module.exports = {isCurrentlyOnLive};

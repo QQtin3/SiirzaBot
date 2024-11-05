@@ -4,4 +4,6 @@
 # DO NOT include config file filled on Git.
 config.json
 
+# Node files
+package-lock.json
 node_modules

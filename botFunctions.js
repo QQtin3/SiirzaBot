@@ -1,4 +1,3 @@
-const {Client, GatewayIntentBits} = require('discord.js');
 const config = require('./config.json');
 
 function ping(message) {
@@ -50,8 +49,8 @@ async function postTwitchNotif(client) {
 async function postSrcNotif(client, gameName, category, time, link) {
     try {
         const channel = await client.channels.fetch(config.SPEEDRUN_NOTIF.DISCORD_CHANNEL_ID);
-        await channel.send(`${config.SPEEDRUN_NOTIF.MESSAGE} \n${gameName} - ${category} - ${time} \n ${link}`);
-        console.log("Twitch notification - POSTED")
+        await channel.send(`${config.SPEEDRUN_NOTIF.MESSAGE} \n🎮[**${gameName}** - **${category}**](${link}) \n⏱️ **${time}**`);
+        console.log("Speedrun.com notification - POSTED")
     } catch (e) {
         console.log(e);
     }
