@@ -5,7 +5,7 @@ A DiscordJS bot sending messages in a specific Discord channel if a specific str
 # How to setup?
 There is no need to be an expert for that since it's a Discord Bot so if you follow these guidelines you should be fine :
 
-1. Dowload the last version (in release section)
+1. Dowload the lastest version (in release section)
 2. Open the folder and edit the `config.default.json` file to match your settings (see the section below for more details)
 3. Rename your configuration file to `config.json`
 4. Use `npm install` to install needed dependencies.

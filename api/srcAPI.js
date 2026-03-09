@@ -1,4 +1,4 @@
-const config = require('./config.json');
+const config = require('../config.json');
 
 async function fetchRunnerID() {
     try {
@@ -19,7 +19,8 @@ async function fetchRuns() {
     try {
         const runnerID = await fetchRunnerID();
         if (!runnerID) {
-            throw new Error('Invalid runner ID received');
+            console.error('Invalid runner ID received');
+			return [];
         }
 
         const url = `https://www.speedrun.com/api/v1/runs?user=${runnerID}`;
@@ -45,7 +46,7 @@ async function processingRuns() {
             const verifiedDate = new Date(run.status['verify-date']);
             let currentDate = new Date();
             currentDate.setMinutes(currentDate.getMinutes() - 15);
-            if (verifiedDate >= currentDate) {  // If verify date was -15min from current time
+            if (verifiedDate >= currentDate) {  // If verify the date was within 15 min from the current time
                 const game = await gameById(run.game);
                 const gameName = game.names.international;
                 const category = await categoryById(run.category);

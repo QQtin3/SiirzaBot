@@ -1,20 +1,18 @@
 const {Client, GatewayIntentBits} = require('discord.js');
 const config = require('./config.json');
-const {commandNotFound, twitch, speedruncom, ping, postTwitchNotif, postSrcNotif} = require('./botFunctions.js');
-const {isCurrentlyOnLive} = require('./twitchAPI.js');
-const {processingRuns} = require('./srcAPI.js');
+
+const botCommands = require('./commands/autoload.js');
+const {updateTwitchAPIToken, isCurrentlyOnLive} = require('./api/twitchAPI.js');
+const {processingRuns} = require('./api/srcAPI.js');
+const {postTwitchNotif} = require("./functions/postTwitchNotif");
+const {postSrcNotif} = require("./functions/postSrcNotif");
+const {commandNotFound} = require("./functions/commandNotFound");
 
 // DiscordJS client
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent]
 });
 
-// Define a mapping of command names to functions
-const functionMapping = {
-    "ping": ping,
-    "twitch": twitch,
-    "speedruncom": speedruncom
-};
 
 // Both notifications will be sent by default
 let twitchNotifications = true;
@@ -25,9 +23,12 @@ let isOnLive = false;
 client.once('ready', () => {
     console.log('Bot is online!');
 
-    // Check API Twitch et gère les notifications
-    loopTwitchAPI();
-    loopSrcAPI();
+	// Refresh le token de l'API Twitch au besoin
+	updateTwitchAPIToken().then(() => {
+		// Check API Twitch et gère les notifications
+		loopTwitchAPI();
+		loopSrcAPI();
+	});
 });
 
 let securityCooldownTriggered = false;  // If streamer disconnects make a security not to send notification again
@@ -48,7 +49,7 @@ async function loopTwitchAPI() {
         }
         setTimeout(loopTwitchAPI, 10000)  // Loop 10s
     } else {
-        setTimeout(loopTwitchAPI, 1800000) // Loop each 30min if notifications are off
+        setTimeout(loopTwitchAPI, 1800000) // Loop each 30 min if notifications are off
     }
 }
 
@@ -68,13 +69,13 @@ async function loopSrcAPI() {
 client.on('messageCreate', message => {
 
     // Ignore bot's own messages
-    if (message.author.bot) return;
+    if (message.author.bot) { return; }
 
-    if (message.content.startsWith(config.BOT.PREFIX)) {  // Check if message starts with defined prefix
+    if (message.content.startsWith(config.BOT.PREFIX)) {  // Check if a message starts with defined prefix
         // Get the command name by removing the prefix and any extra spaces
         const commandName = message.content.slice(1).trim().split(' ')[0];
-        const commandFunction = functionMapping[commandName];
 
+		const commandFunction = botCommands[commandName];
         if (commandFunction) {
             const notificationMap = {
                 "twitch": { notifications: twitchNotifications, setter: (value) => { twitchNotifications = value; } },
@@ -95,5 +96,5 @@ client.on('messageCreate', message => {
 });
 
 
-// Log in to Discord with your bot's token
+// Log in to Discord with bot's token
 client.login(config.BOT.APPLICATION_TOKEN);
