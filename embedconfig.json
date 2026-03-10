@@ -1,10 +1,11 @@
 {
-  "CUSTOM_EMBEDS": {
-    "game_id": {
-      "title": "",
-      "url": "",
-      "description": "",
-      "color": 0
-    }
+  "GENERAL": {
+    "AUTHOR": {
+      "NAME": "Zax",
+      "URL": "https://zaxpeaks.fr",
+      "ICONURL": "https://files.zaxpeaks.fr/files/img/logo.png"
+    },
+    "TITLE": "SiirZax est en live !",
+    "COLOR": 16716856
   }
 }

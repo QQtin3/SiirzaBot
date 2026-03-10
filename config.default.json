@@ -2,7 +2,8 @@
   "BOT": {
     "APPLICATION_TOKEN": "",
     "PREFIX": "",
-    "ADMIN_ID": []
+    "ADMIN_ID": [],
+    "STREAMER_USERNAME": ""
   },
   "TWITCH_NOTIF": {
     "DISCORD_CHANNEL_ID": ""
@@ -13,8 +14,6 @@
   },
   "TWITCH_API": {
     "URL": "https://api.twitch.tv/helix",
-    "STREAMER_USERNAME": "",
-
     "TOKEN_URL": "https://id.twitch.tv",
     "CLIENT_ID": "",
     "CLIENT_SECRET": ""
