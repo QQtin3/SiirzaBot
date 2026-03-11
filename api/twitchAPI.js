@@ -1,5 +1,5 @@
 const config = require('../config.json');
-const {gameIdByName, categoryById} = require("./srcAPI");
+const {gameIdByName, categoryById, gameDataByName} = require("./srcAPI");
 const {markdownFormat} = require("../functions/markdownFormat");
 
 let twitchApiToken = null;
@@ -34,7 +34,6 @@ async function isCurrentlyOnLive(data = null) {
 	} else {
 		result = data;
 	}
-	console.log(result);
 	return result.data.length > 0;
 }
 
@@ -58,34 +57,33 @@ async function getGameCategoryString( bold = false, inline = false) {
 	const streamData = await fetchStreamInfo();
 	if (streamData.data.length > 0) {
 		const gameName = streamData.data[0].game_name;
-		const gameData = await gameIdByName(gameName);
+		const gameData = await gameDataByName(gameName);
+		const gameId = gameData.id;
+
 		// If a game has been found
-		if (gameData.length > 0) {
-			const gameId = gameData[0].id;
+		if (gameId) {
 			const categories = await categoryById(gameId);
 
-			// Seek each category name
-			const categoryMap = [];
-			categories.forEach(category => {
-				categoryMap.push(category.name);
-			})
-			// Compare to each word of the stream title
+			// Seek each category name in the stream title
 			const streamTitle = streamData.data[0].title;
-			let found = false;
-			let category = "";
-			streamTitle.split(' ').forEach(mot => {
-				if (!found && categoryMap.includes(mot.trim())) {
-					found = true;
-					category = mot.trim();
+			let currentCategory = null;
+			categories.forEach(category => {
+				if (streamTitle.includes(category.name) && currentCategory == null) {
+					currentCategory = category.name;
 				}
 			})
 
-			return markdownFormat(category, bold, inline);
+			if (currentCategory) {
+				return markdownFormat(currentCategory, bold, inline);
+			} else {
+				return null;
+			}
+
 		} else {
-			return "";
+			throw new Error("Game ID not found.");
 		}
 	} else {
-		return "";
+		throw new Error("Stream data not found.");
 	}
 }
 

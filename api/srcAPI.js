@@ -74,7 +74,24 @@ async function gameIdByName(game) {
 			},
 		});
 		const value = await response.json();
-		return value.data;
+		return value.data[0].id;
+	} catch (error) {
+		console.error('Error fetching gameIdByName:', error);
+	}
+}
+
+async function gameDataByName(game) {
+	try {
+		const url = `https://www.speedrun.com/api/v1/games?name=${encodeURIComponent(game)}&max=1`;
+		const response = await fetch(url, {
+			method: 'GET',
+			headers: {
+				'Accept': 'application/json',
+				'X-API-Key': config.SPEEDRUNCOM_API.RUNNER_APIKEY,
+			},
+		});
+		const value = await response.json();
+		return value.data[0];
 	} catch (error) {
 		console.error('Error fetching gameIdByName:', error);
 	}
@@ -113,6 +130,64 @@ async function categoryById(id) {
 	}
 }
 
+async function getUserId(username) {
+	const url = `https://www.speedrun.com/api/v1/users?lookup=${encodeURIComponent(username)}`;
+
+	const res = await fetch(url);
+	const data = await res.json();
+
+	if (!data.data.length) {
+		return null;
+	}
+
+	return data.data[0].id;
+}
+
+async function getCurrentLeaderboardData(gameName, gameCategory) {
+	const gameId = await gameIdByName(gameName);
+	const categories = await categoryById(gameId);
+	// Seek each category name
+	let categoryId = "";
+	categories.forEach(category => {
+		if (category.name === gameCategory) {
+			categoryId = category.id;
+		}
+	})
+
+	// If category id has been found
+	if (categoryId !== "") {
+		const userId = await getUserId(config.SPEEDRUNCOM_API.RUNNER_USERNAME);
+		if (userId) {
+			// Fetch
+			const url = `https://www.speedrun.com/api/v1/users/${userId}/personal-bests`;
+			const res = await fetch(url);
+			const data = await res.json();
+			if (data) {
+				let personalBest = null;
+				data.data.forEach(runObject => {
+					if (runObject.run.game === gameId && runObject.run.category === categoryId) {
+						personalBest = runObject;
+					}
+				})
+				if (personalBest) {
+					return {
+						place: personalBest.place,
+						time: personalBest.run.times.primary_t
+					};
+				} else {
+					return null;
+				}
+			} else {
+				throw new Error('No personal-bests data found.');
+			}
+		} else {
+			throw new Error('No speedrun.com user found.');
+		}
+	} else {
+		throw new Error('No speedrun.com category found.');
+	}
+}
+
 function formatISODuration(duration) {
 	const regex = /PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)(?:\.(\d+))?S)?/;
 	const matches = duration.match(regex);
@@ -132,4 +207,4 @@ function formatISODuration(duration) {
 	return formattedDuration.trim();
 }
 
-module.exports = {processingRuns, gameIdByName, categoryById};
+module.exports = {processingRuns, gameIdByName, gameDataByName, categoryById, getCurrentLeaderboardData};
