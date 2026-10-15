@@ -178,7 +178,7 @@ async function getCurrentLeaderboardData(gameName, gameCategory) {
 					return null;
 				}
 			} else {
-				throw new Error('No personal-bests data found.');
+				return null;
 			}
 		} else {
 			throw new Error('No speedrun.com user found.');

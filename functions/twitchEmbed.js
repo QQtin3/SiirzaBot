@@ -1,4 +1,4 @@
-const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
+const {EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
 const config = require('../config.json');
 const embedConfig = require('../embedConfig.json');
 const {getGameNameString, getGameCategoryString} = require("../api/twitchAPI");
@@ -10,34 +10,42 @@ async function createTwitchEmbed() {
 	const gamenameRaw = await getGameNameString();
 	const gamecategoryRaw = await getGameCategoryString();
 
-	const gamename = "**"+gamenameRaw+"**";
-	const gamecategory = "**"+gamecategoryRaw+"**";
+	const gamename = "**" + gamenameRaw + "**";
+	const gamecategory = "**" + gamecategoryRaw + "**";
 
-	const lbdata = await getCurrentLeaderboardData(gamenameRaw, gamecategoryRaw);
-	if (!lbdata) {
-		throw new Error('Invalid leaderboard place or time while fetching.');
-	}
-
-	const suffixPlace = lbdata.place == 1 ? 'er' : 'ème';
-	const txtTime = formatSpeedrunTime(lbdata.time);
-
-	const twitchEmbed = new EmbedBuilder()
-		.setAuthor({
-			name: embedConfig.GENERAL.AUTHOR.NAME,
-			url: embedConfig.GENERAL.AUTHOR.URL,
-			iconURL: embedConfig.GENERAL.AUTHOR.ICONURL
-		})
+	const embed = new EmbedBuilder();
+	embed.setAuthor({
+		name: embedConfig.GENERAL.AUTHOR.NAME,
+		url: embedConfig.GENERAL.AUTHOR.URL,
+		iconURL: embedConfig.GENERAL.AUTHOR.ICONURL
+	})
 		.setTitle(embedConfig.GENERAL.TITLE)
 		.setURL("https://twitch.tv/" + config.BOT.STREAMER_USERNAME)
-		.setDescription('Rejoins nous sur ' + gamename +  ' pour du speedrun ' + gamecategory + `\nActuellement **${lbdata.place + suffixPlace}** avec un **${txtTime}**\nRecord du monde: "temps du record"`)
+		.setDescription('Rejoins nous sur ' + gamename + ' pour du speedrun ' + gamecategory)
 		.setColor(embedConfig.GENERAL.COLOR)
 		.setImage("https://media.discordapp.net/attachments/1128439320097869966/1479841497812570345/annonce_mst.jpg")
-		.addFields({
-			name: "Place + Temps",
-			value: "WR:",
+
+	// Adding time only if the user already has a run in the leaderboard
+	const lbdata = await getCurrentLeaderboardData(gamenameRaw, gamecategoryRaw);
+	let currentTimeText = "Pas encore de PB existant pour cette catégorie !";
+	if (lbdata) {
+		const suffixPlace = lbdata.place === 1 ? 'er' : 'ème';
+		const txtTime = formatSpeedrunTime(lbdata.time);
+		currentTimeText= `Actuellement **${lbdata.place + suffixPlace}** avec un **${txtTime}**`
+	}
+
+	embed.addFields({
+			name: "",
+			value: `${currentTimeText}`,
 			inline: false
-		});
-	return twitchEmbed;
+		},
+		{
+			name: "",
+			value: `Record du monde: "temps du record"`,
+			inline: false
+		}
+	);
+	return embed;
 }
 
 const button = new ButtonBuilder()

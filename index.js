@@ -71,7 +71,7 @@ client.on('messageCreate', message => {
     // Ignore bot's own messages
     if (message.author.bot) { return; }
 
-    if (message.content.startsWith(config.BOT.PREFIX)) {  // Check if a message starts with defined prefix
+    if (message.content.startsWith(config.BOT.PREFIX)) {  // Check if a message starts with a defined prefix
         // Get the command name by removing the prefix and any extra spaces
         const commandName = message.content.slice(1).trim().split(' ')[0];
 

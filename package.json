@@ -4,7 +4,7 @@
   "description": "A DiscordJS bot sending messages in a specific Discord channel if a specific streamer is online, can also be configured to query verified runs posted by somebody on speedrun.com",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",

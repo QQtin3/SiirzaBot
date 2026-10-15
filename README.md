@@ -8,7 +8,7 @@ There is no need to be an expert for that since it's a Discord Bot so if you fol
 1. Dowload the lastest version (in release section)
 2. Open the folder and edit the `config.default.json` file to match your settings (see the section below for more details)
 3. Rename your configuration file to `config.json`
-4. Use `npm install` to install needed dependencies.
+4. Use `npm install` to install necessary dependencies.
 5. Run `index.js`
 
 There you go!
@@ -22,6 +22,6 @@ Some more details :
 
 # Any suggestion or troubleshooting?
 
-- For any suggestion I let you open an issue maybe I will take a look but no guarantee!
+- For any suggestion I let you open an issue, maybe I will take a look but no guarantee!
 
-- If you have any problem (which is due to my code not during your setup) I let you open an issue as well or if more sensitive please send a mail at qqtin.projets@qqtinworks.fr 
+- If you have any problem (which is due to my code, not during your setup), I let you open an issue as well or if more sensitive, please send mail at qqtin.projets@qqtinworks.fr 

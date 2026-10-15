@@ -1,5 +1,5 @@
 const config = require('../config.json');
-const {gameIdByName, categoryById, gameDataByName} = require("./srcAPI");
+const {categoryById, gameDataByName} = require("./srcAPI");
 const {markdownFormat} = require("../functions/markdownFormat");
 
 let twitchApiToken = null;
