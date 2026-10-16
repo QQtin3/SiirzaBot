@@ -14,13 +14,13 @@ Everything runs on Cloudflare: nothing has to run on the PC.
 - `src/index.ts`: `fetch` serves the admin page, `scheduled` (Cron) polls Twitch and announces a new live.
 - `src/announcement.ts`: shared logic. Picks the theme from the Twitch game id, gets the run with `getGamecategoryRaw(profile, gameName, title)` (profile from the `SPEEDRUN_PROFILE` var), draws the image, fetches PB/WR for the embed. speedrun.com failures never block an announcement.
 - `src/games.ts`: one entry per Twitch `game_id` (background, logo, `displayName`). Unknown games use the default theme.
-- `src/speedrun.ts`: speedrun.com API (public, no key). `getGamecategoryRaw(profile, gameName, streamTitle)` looks only at the games of the speedrun.com profile (from its PBs) linked to the Twitch game, and returns the category whose name is in the live title (longest match) with the PB, or null = no subtitle drawn and no PB/WR fields. `getWorldRecord(category)`.
+- `src/speedrun.ts`: speedrun.com API (public, no key). `getGamecategoryRaw(profile, gameName, streamTitle)` looks only at the games of the speedrun.com profile (from its PBs) linked to the Twitch game, and returns the category whose name is in the live title with the PB, or null = no subtitle drawn and no PB/WR fields. Categories and subcategories (speedrun.com variables) are matched by name or acronym of 3+ letters ("AFR" = "All Fairy Rewards", "NMG" = "No Major Glitches"), the speedrun.com default value is used when the title names none. Best match = most title characters explained, then the main game over "Category Extensions". Individual-level PBs are ignored. `getWorldRecord(category)` uses the same subcategories.
 - `wrangler.toml` `SPEEDRUN_PROFILE`: speedrun.com profile name of the runner.
 - `src/twitch.ts`: client-credentials token cached in KV, `getLiveStream` (Cron), `getChannelInfo` (page, works offline).
 - `src/discord.ts`: webhook with multipart (`payload_json` + `files[0]`), embed image is `attachment://overlay.png`. Same embed as the old SiirzaBot (author, title, color, description, PB and WR fields) plus a "Regarder le stream" link button (`?with_components=true`). Embed texts are edited here.
 - `src/page/`: admin page (streamer name + password only), server-rendered HTML strings.
 - `src/overlay/`: image drawing with the Cloudflare Images binding (`env.IMAGES`).
-- `category-names.json`: speedrun.com category name -> text drawn on the image (e.g. "MST" -> "Medallions Stones Trials"). Checked by `render.ts`, the embed keeps the speedrun.com name. Keys are case-sensitive.
+- `category-names.json`: speedrun.com category name, with the subcategories found in the title (e.g. "Any% No Major Glitches"), -> text drawn on the image (e.g. "MST" -> "Medallions Stones Trials"). Checked by `render.ts`, the embed keeps the speedrun.com name. Keys are case-sensitive.
 - `theme.css`: single source of truth for colors, sizes and layout. Parsed at runtime and also used by `overlay.html` (browser preview). Per-game accent gradients live in `[data-game="<twitch game_id>"]` blocks, with the game name in a comment above each one.
 
 ## Cloudflare Images constraints

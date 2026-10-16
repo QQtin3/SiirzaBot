@@ -1,13 +1,14 @@
 import categoryNames from "../../category-names.json";
 import type { Env } from "../env";
 import { fetchBytes, readStream, toStream } from "./bytes";
-import type { GradientColors } from "./png";
+import { encodeColorPixel, encodeFadeStrip, type FadeDirection, type GradientColors } from "./png";
 import { createSoftShadow, type ShadowLayer } from "./shadow";
 import { createGradientTextLayer, createTextLayer, measureImage, type TextLayer } from "./text-layer";
 import {
 	getThemeVariables,
-	readAlphaVariable,
+	readNumberVariable,
 	readPixelVariable,
+	readRgbaVariable,
 	readVariable,
 	type ThemeVariables,
 } from "./theme-variables";
@@ -50,12 +51,6 @@ const OUTPUT_FORMAT = "image/png";
 /** Images allows 10 transformations per chain, a margin is kept below that limit. */
 const MAX_DRAWS_PER_CHAIN = 8;
 
-/** A 1x1 opaque #141414 pixel, stretched to the band size and made translucent when drawn. */
-const BAND_PIXEL_BASE64 =
-	"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGMQEREBAAB8AD2SgCfbAAAAAElFTkSuQmCC";
-
-const decodeBase64 = (value: string): Uint8Array => Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
-
 const centerLeft = (canvasWidth: number, width: number): number => Math.round((canvasWidth - width) / 2);
 
 const solid = (color: string): GradientColors => ({ from: color, to: color });
@@ -68,8 +63,10 @@ const createBandLayer = async (
 	variables: ThemeVariables,
 	canvasWidth: number,
 ): Promise<Layer> => {
+	// An opaque pixel of the band color, stretched to the band size and made translucent when drawn
+	const color = readRgbaVariable(variables, "--band-background");
 	const stretched = await images
-		.input(toStream(decodeBase64(BAND_PIXEL_BASE64)))
+		.input(toStream(encodeColorPixel(color)))
 		.transform({ width: canvasWidth, height: readPixelVariable(variables, "--band-height"), fit: "squeeze" })
 		.output({ format: OUTPUT_FORMAT });
 
@@ -77,8 +74,39 @@ const createBandLayer = async (
 		bytes: await readStream(stretched.image()),
 		left: 0,
 		top: readPixelVariable(variables, "--band-top"),
-		opacity: readAlphaVariable(variables, "--band-background"),
+		opacity: color.alpha,
 	};
+};
+
+/**
+ * Drop shadow of the band: a strip fading out above it and another one below it, like a CSS box-shadow
+ * without offset. Built from tiny gradient PNGs, so no blur is needed on a full-width image.
+ */
+const createBandShadowLayers = async (
+	images: ImagesBinding,
+	variables: ThemeVariables,
+	canvasWidth: number,
+): Promise<Layer[]> => {
+	const size = readPixelVariable(variables, "--band-shadow-size");
+	if (size <= 0) return [];
+
+	const color = readRgbaVariable(variables, "--band-shadow-color");
+	const stretch = async (direction: FadeDirection): Promise<Uint8Array> => {
+		const result = await images
+			.input(toStream(encodeFadeStrip(color, direction)))
+			.transform({ width: canvasWidth, height: size, fit: "squeeze" })
+			.output({ format: OUTPUT_FORMAT });
+
+		return readStream(result.image());
+	};
+
+	const [above, below] = await Promise.all([stretch("up"), stretch("down")]);
+	const bandTop = readPixelVariable(variables, "--band-top");
+
+	return [
+		{ bytes: above, left: 0, top: bandTop - size },
+		{ bytes: below, left: 0, top: bandTop + readPixelVariable(variables, "--band-height") },
+	];
 };
 
 const fetchOptionalBytes = async (url: string): Promise<Uint8Array | null> => {
@@ -143,7 +171,13 @@ const createShadowedText = async (
 	// A blur of 0 keeps the shadow as a sharp copy of the text
 	const blur = readPixelVariable(variables, "--shadow-blur");
 	const shadow =
-		blur > 0 ? await createSoftShadow(env.IMAGES, shadowText, blur) : { bytes: shadowText.bytes, padding: 0 };
+		blur > 0
+			? await createSoftShadow(env.IMAGES, shadowText, {
+					blur,
+					spread: readPixelVariable(variables, "--shadow-spread"),
+					strength: readNumberVariable(variables, "--shadow-strength"),
+				})
+			: { bytes: shadowText.bytes, padding: 0 };
 
 	return { text, shadow };
 };
@@ -180,7 +214,10 @@ export const renderOverlay = async (env: RenderEnv, data: OverlayData): Promise<
 	const canvas = { width: px("--canvas-width"), height: px("--canvas-height") };
 	const shadowOffsetY = px("--shadow-offset-y");
 	const white = solid(readVariable(variables, "--text-color"));
-	const titleColors = { from: white.from, to: readVariable(variables, "--title-color-end") };
+	const titleColors = {
+		from: readVariable(variables, "--title-color-start"),
+		to: readVariable(variables, "--title-color-end"),
+	};
 	const accent = data.accent ?? {
 		from: readVariable(variables, "--accent-color"),
 		to: readVariable(variables, "--accent-color-end"),
@@ -188,9 +225,10 @@ export const renderOverlay = async (env: RenderEnv, data: OverlayData): Promise<
 
 	const subtitleText = (CATEGORY_NAMES[data.subtitle] ?? data.subtitle).trim().toUpperCase();
 
-	const [background, band, logo, title, subtitle, footerLabel, footerDetails] = await Promise.all([
+	const [background, band, bandShadow, logo, title, subtitle, footerLabel, footerDetails] = await Promise.all([
 		fetchBytes(data.backgroundUrl),
 		createBandLayer(env.IMAGES, variables, canvas.width),
+		createBandShadowLayers(env.IMAGES, variables, canvas.width),
 		createLogoLayers(env.IMAGES, variables, data.logoUrl, canvas.width),
 		createShadowedText(env, variables, data.gameName.toUpperCase(), titleColors, "--font-size-title"),
 		subtitleText === "" ? null : createShadowedText(env, variables, subtitleText, accent, "--font-size-subtitle"),
@@ -223,6 +261,7 @@ export const renderOverlay = async (env: RenderEnv, data: OverlayData): Promise<
 	).layers;
 
 	const layers: Layer[] = [
+		...bandShadow,
 		band,
 		...logo,
 		...placeShadowed(title, centerLeft(canvas.width, title.text.width), titleTop, shadowOffsetY),

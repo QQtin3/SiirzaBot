@@ -1,4 +1,5 @@
 import themeCss from "../../theme.css";
+import type { RgbaColor } from "./png";
 
 /**
  * theme.css is read as text and its custom properties are extracted here, so it stays
@@ -7,7 +8,6 @@ import themeCss from "../../theme.css";
 const COMMENT_PATTERN = /\/\*[\s\S]*?\*\//g;
 const BLOCK_PATTERN = /([^{}]+)\{([^{}]*)\}/g;
 const DECLARATION_PATTERN = /(--[\w-]+)\s*:\s*([^;]+);/g;
-const ALPHA_PATTERN = /rgba?\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*(?:,\s*([\d.]+)\s*)?\)/;
 
 const THEME_CSS = themeCss.replace(COMMENT_PATTERN, "");
 
@@ -44,8 +44,30 @@ export const readPixelVariable = (variables: ThemeVariables, name: string): numb
 	return value;
 };
 
-/** Reads the alpha channel of an rgba() variable, 1 when there is none. */
-export const readAlphaVariable = (variables: ThemeVariables, name: string): number => {
-	const alpha = ALPHA_PATTERN.exec(readVariable(variables, name))?.[1];
-	return alpha === undefined ? 1 : Number.parseFloat(alpha);
+/** A plain number, decimals allowed (e.g. 1.5). */
+export const readNumberVariable = (variables: ThemeVariables, name: string): number => {
+	const value = Number.parseFloat(readVariable(variables, name));
+	if (Number.isNaN(value)) {
+		throw new Error(`Invalid number for ${name} in theme.css`);
+	}
+
+	return value;
+};
+
+const RGBA_PATTERN = /rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)/;
+
+/** Reads an rgb() / rgba() variable. */
+export const readRgbaVariable = (variables: ThemeVariables, name: string): RgbaColor => {
+	const match = RGBA_PATTERN.exec(readVariable(variables, name));
+	if (!match) {
+		throw new Error(`Expected an rgba() value for ${name} in theme.css`);
+	}
+
+	const [, red, green, blue, alpha] = match;
+	return {
+		red: Number.parseInt(red ?? "0", 10),
+		green: Number.parseInt(green ?? "0", 10),
+		blue: Number.parseInt(blue ?? "0", 10),
+		alpha: alpha === undefined ? 1 : Number.parseFloat(alpha),
+	};
 };

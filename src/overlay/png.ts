@@ -124,5 +124,39 @@ export const encodeGradientStrip = ({ from, to }: GradientColors, steps = DEFAUL
 	return buildPng(1, steps, COLOR_TYPE_RGB, Uint8Array.from(rows.flat()));
 };
 
+export interface RgbaColor {
+	red: number;
+	green: number;
+	blue: number;
+	/** From 0 to 1. */
+	alpha: number;
+}
+
+/** "up": transparent at the top, full color at the bottom. "down": the opposite. */
+export type FadeDirection = "up" | "down";
+
+/** Eases the fade like a blurred edge instead of a hard linear ramp. */
+const smoothstep = (ratio: number): number => ratio * ratio * (3 - 2 * ratio);
+
+/** A 1 x `steps` PNG of a single color whose opacity fades out, used as a soft shadow edge. */
+export const encodeFadeStrip = (
+	{ red, green, blue, alpha }: RgbaColor,
+	direction: FadeDirection,
+	steps = DEFAULT_STEPS,
+): Uint8Array => {
+	const rows = Array.from({ length: steps }, (_, index) => {
+		const towardsColor = index / (steps - 1);
+		const ratio = direction === "up" ? towardsColor : 1 - towardsColor;
+
+		return [0, red, green, blue, Math.round(255 * alpha * smoothstep(ratio))];
+	});
+
+	return buildPng(1, steps, COLOR_TYPE_RGBA, Uint8Array.from(rows.flat()));
+};
+
+/** An opaque 1x1 PNG of the color (its alpha is ignored, it is applied when the pixel is drawn). */
+export const encodeColorPixel = ({ red, green, blue }: RgbaColor): Uint8Array =>
+	buildPng(1, 1, COLOR_TYPE_RGB, Uint8Array.of(0, red, green, blue));
+
 /** A fully transparent 1x1 PNG: stretched to any size, it is an empty canvas to draw on. */
 export const encodeTransparentPixel = (): Uint8Array => buildPng(1, 1, COLOR_TYPE_RGBA, new Uint8Array(5));

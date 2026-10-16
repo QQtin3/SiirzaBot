@@ -11,9 +11,12 @@
 
 	/* Colors */
 	--text-color: #ffffff;
+	/* Game name gradient: top color, then bottom color */
+	--title-color-start: #ffffff;
 	--title-color-end: #b9b9b9;
-	--title-gradient: linear-gradient(to bottom, var(--text-color) 30%, var(--title-color-end) 100%);
-	--band-background: rgba(20, 20, 20, 0.58);
+	--title-gradient: linear-gradient(to bottom, var(--title-color-start) 30%, var(--title-color-end) 100%);
+	--band-background: rgba(0, 0, 0, 0.75);
+	--band-shadow-color: rgba(0, 0, 0, 0.6);
 	--text-shadow-color: rgba(0, 0, 0, 1);
 
 	/* Typography */
@@ -26,16 +29,21 @@
 	--letter-spacing-title: -0.01em;
 
 	/* Layout (values measured on a 1920x1080 canvas) */
-	--logo-top: 108px;
-	--logo-width: 270px;
-	--logo-height: 242px;
+	--logo-top: 36px;
+	--logo-width: 540px;
+	--logo-height: 484px;
 	--band-top: 556px;
 	--band-height: 312px;
 	--footer-center-y: 958px;
 	--band-text-gap: 40px;
 	--footer-piece-gap: 4px;
-	--shadow-offset-y: 10px;
-	--shadow-blur: 6px;
+	--band-shadow-size: 40px;
+	--shadow-offset-y: 0px;
+	--shadow-blur: 10px;
+	/* Text shadow grows this much around the letters before the blur, so it shows on every side */
+	--shadow-spread: 2px;
+	/* Number of stacked shadow copies: 1 = light, 2-3 = more opaque, decimals allowed */
+	--shadow-strength: 1;
 }
 
 /*
@@ -51,8 +59,8 @@
 
 /* Majora's Mask */
 [data-game="12482"] {
-	--accent-color: #a64dff;
-	--accent-color-end: #f11338;
+	--accent-color: #cc1442;
+	--accent-color-end: #8705a1;
 }
 
 /* The Wind Waker */
